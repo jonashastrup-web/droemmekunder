@@ -49,13 +49,14 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--purple)}
 .ok{background:var(--green);color:#fff;border-radius:12px;padding:14px 16px;margin-top:14px;display:none}
 .warn{font-size:13px;opacity:.75;margin-top:10px}
 .hidden{display:none}
+.opt{margin:26px 0 0;padding-top:14px;border-top:1.5px dashed var(--grey-dark);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.6}
 .counter{font-size:12px;opacity:.6;text-align:right;margin-top:4px}
 </style>
 </head>
 <body>
 <header>
   <img src="https://alive.dk/wp-content/uploads/logo_black.svg" alt="ALIVE">
-  <div><h1>Drømmekunder</h1><p>Togøvelse København–Stockholm · 2 og 2 · ca. 60 min.</p></div>
+  <div><h1>Drømmekunder</h1><p>Togøvelse København–Stockholm · 2 og 2 · ca. 40 min.</p></div>
 </header>
 <div class="progress"><div id="bar"></div></div>
 <main id="app"></main>
@@ -74,11 +75,11 @@ const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 
 const INTERVIEW=[
  {k:"kunde",t:"Hvilken kunde elsker du at arbejde sammen med?",h:"Vælg én. Gerne en, som ikke er den mest oplagte.",type:"text"},
- {k:"hvorfor",t:"Hvorfor elsker du at arbejde med dem?",h:"Hvad gør samarbejdet godt? Mennesker, opgaver, tillid, tempo …"},
- {k:"kendetegn",t:"Hvad kendetegner dem?",h:"Hvem er jeres kontaktperson (rolle)? Branche, størrelse, typer opgaver, budgetniveau."},
- {k:"forretning",t:"Er de også en god forretning for os?",type:"chips",o:["Ja, klart","Middel","Nej, men de er gode at arbejde med","Ved ikke"]},
- {k:"start",t:"Hvordan blev de kunde hos os?",h:"Anbefaling, netværk, udbud, opsøgende salg, Aller …"},
- {k:"flere",t:"Hvad skal der til for at få flere kunder som dem?",h:"Hvor finder vi dem, og hvad skal vi sige eller gøre anderledes?"}
+ {k:"hvorfor",t:"Hvorfor elsker du at arbejde med dem?",h:"Stikord er fint. Mennesker, opgaver, tillid, tempo …"},
+ {k:"flere",t:"Hvad skal der til for at få flere kunder som dem?",h:"Stikord er fint. Hvor finder vi dem, og hvad skal vi gøre anderledes?"},
+ {k:"kendetegn",opt:1,t:"Hvem er jeres kontaktperson, og hvad kendetegner kunden?",h:"Stikord er fint. Rolle, branche, størrelse, typer opgaver."},
+ {k:"forretning",opt:1,t:"Er de også en god forretning for os?",type:"chips",o:["Ja, klart","Middel","Nej, men de er gode at arbejde med","Ved ikke"]},
+ {k:"start",opt:1,t:"Hvordan blev de kunde hos os?",h:"Stikord er fint. Anbefaling, netværk, udbud, opsøgende salg …"}
 ];
 
 const steps=[
@@ -94,10 +95,10 @@ function field(path,q,val){
 function get(path){return path.split(".").reduce((o,k)=>o==null?undefined:o[k],S)}
 function set(path,v){const ks=path.split(".");let o=S;ks.slice(0,-1).forEach(k=>{if(o[k]==null)o[k]={};o=o[k]});o[ks.at(-1)]=v;save()}
 
-let timerInt=null,timerLeft=600;
-function timerHTML(){return `<div class="timer" id="timer"><b id="tt">10:00</b><span style="flex:1">Ca. 10 minutter pr. interview</span><button class="btn small ghost" id="tbtn" type="button">Start</button></div>`}
+let timerInt=null,timerLeft=480;
+function timerHTML(){return `<div class="timer" id="timer"><b id="tt">8:00</b><span style="flex:1">Ca. 8 minutter pr. interview</span><button class="btn small ghost" id="tbtn" type="button">Start</button></div>`}
 function bindTimer(){
-  clearInterval(timerInt);timerInt=null;timerLeft=600;
+  clearInterval(timerInt);timerInt=null;timerLeft=480;
   const b=document.getElementById("tbtn");if(!b)return;
   const draw=()=>{const m=Math.floor(timerLeft/60),s=timerLeft%60;document.getElementById("tt").textContent=`${m}:${String(s).padStart(2,"0")}`;document.getElementById("timer").classList.toggle("done",timerLeft<=0)};
   b.onclick=()=>{if(timerInt){clearInterval(timerInt);timerInt=null;b.textContent="Fortsæt";return}
@@ -117,12 +118,13 @@ function render(){
     <p><b>Sådan gør I</b></p>
     <ol>
       <li>Skriv jeres navne. Brug én telefon pr. par.</li>
-      <li>Interview hinanden på skift i ca. 10 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
+      <li>Interview hinanden på skift i ca. 8 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
       <li>Find sammen tre kontaktpersoner, der ligner dem, I elsker at arbejde med.</li>
       <li>Sig til, hvis I har en kontakt, I gerne vil vende med Jonas senere. Det er helt frivilligt.</li>
       <li>Skitsér sammen en event- eller rejseidé til en af dem.</li>
-      <li>Send svarene til Jonas.</li>
+      <li>Aflever jeres idé.</li>
     </ol>
+    <p><b>Finalen</b><br>Til middagen i Stockholm præsenterer hvert par sin idé på 60 sekunder, og alle stemmer om den bedste.</p>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
   }
   else if(st.id==="pair"){
@@ -137,7 +139,7 @@ function render(){
     const me=st.who==="A"?S.a:S.b,you=st.who==="A"?S.b:S.a;
     h=`<div class="card">${lab}<h2>Interview: <span class="who">${esc(me||"Person")}</span></h2>
     <p class="lead">${esc(you||"Den anden")} spørger og skriver. ${esc(me||"")} svarer.</p>${timerHTML()}
-    ${INTERVIEW.map(q=>field(st.who+"."+q.k,q,S[st.who][q.k])).join("")}</div>`;
+    ${INTERVIEW.map((q,i)=>(q.opt&&!INTERVIEW[i-1].opt?'<div class="opt">Valgfrit, hvis I har tid</div>':'')+field(st.who+"."+q.k,q,S[st.who][q.k])).join("")}</div>`;
   }
   else if(st.id==="look"){
     h=`<div class="card">${lab}<h2>Tre lignende kontaktpersoner</h2>
@@ -156,7 +158,7 @@ function render(){
   }
   else if(st.id==="msg"){
     h=`<div class="card">${lab}<h2>Idé til en drømmekunde</h2>
-    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud.</p>
+    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud. I skal pitche den på 60 sekunder til middagen i Stockholm.</p>
     <label>Til hvem?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
     <label>Titel på idéen</label><input type="text" data-path="F.iTitle" value="${esc(S.F.iTitle)}" placeholder="Fx kick-off på en øde ø">
     <label>Hvad skal de opleve?</label><textarea data-path="F.iWhat">${esc(S.F.iWhat)}</textarea>
@@ -164,10 +166,10 @@ function render(){
     </div>`;
   }
   else if(st.id==="sum"){
-    h=`<div class="card summary"><h2>Klar til at sende</h2>
-    <p class="lead">Tjek svarene, og send dem til Jonas. Virker mail-knappen ikke, så brug "Kopiér" eller "Download".</p>
+    h=`<div class="card summary"><h2>Klar til at aflevere</h2>
+    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Husk jeres pitch på 60 sekunder til middagen. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
     <div class="chips" style="margin-bottom:6px">
-      <button type="button" class="btn primary" id="mail">Send til Jonas</button>
+      <button type="button" class="btn primary" id="mail">Aflever jeres idé</button>
       <button type="button" class="btn ghost" id="copy">Kopiér svar</button>
       <button type="button" class="btn ghost" id="dl">Download</button>
     </div>
