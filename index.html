@@ -10,8 +10,9 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--grey);color:var(--purple);font:16px/1.4 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif}
 header{display:flex;align-items:center;gap:16px;padding:18px 20px;background:#fff;border-bottom:1px solid var(--grey-dark)}
-header img{height:34px}
-header h1{margin:0;font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
+header img{height:22px;width:auto;flex-shrink:0}
+header div{min-width:0}
+header h1{margin:0;font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
 header p{margin:2px 0 0;font-size:13px;opacity:.75}
 .progress{height:6px;background:var(--grey-dark)}
 .progress div{height:100%;background:var(--red);width:0;transition:width .3s}
