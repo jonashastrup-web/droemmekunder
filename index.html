@@ -124,7 +124,6 @@ function render(){
       <li>Skitsér sammen en event- eller rejseidé til en af dem.</li>
       <li>Aflever jeres idé.</li>
     </ol>
-    <p><b>Finalen</b><br>Til middagen i Stockholm præsenterer hvert par sin idé på 60 sekunder, og alle stemmer om den bedste.</p>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
   }
   else if(st.id==="pair"){
@@ -158,7 +157,7 @@ function render(){
   }
   else if(st.id==="msg"){
     h=`<div class="card">${lab}<h2>Idé til en drømmekunde</h2>
-    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud. I skal pitche den på 60 sekunder til middagen i Stockholm.</p>
+    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud.</p>
     <label>Til hvem?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
     <label>Titel på idéen</label><input type="text" data-path="F.iTitle" value="${esc(S.F.iTitle)}" placeholder="Fx kick-off på en øde ø">
     <label>Hvad skal de opleve?</label><textarea data-path="F.iWhat">${esc(S.F.iWhat)}</textarea>
@@ -167,7 +166,7 @@ function render(){
   }
   else if(st.id==="sum"){
     h=`<div class="card summary"><h2>Klar til at aflevere</h2>
-    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Husk jeres pitch på 60 sekunder til middagen. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
+    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
     <div class="chips" style="margin-bottom:6px">
       <button type="button" class="btn primary" id="mail">Aflever jeres idé</button>
       <button type="button" class="btn ghost" id="copy">Kopiér svar</button>
