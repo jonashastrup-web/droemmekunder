@@ -75,7 +75,7 @@ const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const INTERVIEW=[
  {k:"kunde",t:"Hvilken kunde elsker du at arbejde sammen med?",h:"Vælg én. Gerne en, som ikke er den mest oplagte.",type:"text"},
  {k:"hvorfor",t:"Hvorfor elsker du at arbejde med dem?",h:"Hvad gør samarbejdet godt? Mennesker, opgaver, tillid, tempo …"},
- {k:"kendetegn",t:"Hvad kendetegner dem?",h:"Branche, størrelse, typer opgaver (event/rejse), hvem der beslutter, budgetniveau."},
+ {k:"kendetegn",t:"Hvad kendetegner dem?",h:"Hvem er jeres kontaktperson (rolle)? Branche, størrelse, typer opgaver, budgetniveau."},
  {k:"forretning",t:"Er de også en god forretning for os?",type:"chips",o:["Ja, klart","Middel","Nej, men de er gode at arbejde med","Ved ikke"]},
  {k:"start",t:"Hvordan blev de kunde hos os?",h:"Anbefaling, netværk, udbud, opsøgende salg, Aller …"},
  {k:"flere",t:"Hvad skal der til for at få flere kunder som dem?",h:"Hvor finder vi dem, og hvad skal vi sige eller gøre anderledes?"}
@@ -118,9 +118,9 @@ function render(){
     <ol>
       <li>Skriv jeres navne. Brug én telefon pr. par.</li>
       <li>Interview hinanden på skift i ca. 10 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
-      <li>Find sammen tre virksomheder, der ligner jeres kunder.</li>
+      <li>Find sammen tre kontaktpersoner, der ligner dem, I elsker at arbejde med.</li>
       <li>Sig til, hvis I har en kontakt, I gerne vil vende med Jonas senere. Det er helt frivilligt.</li>
-      <li>Skitsér sammen en event- eller rejseidé til en af virksomhederne.</li>
+      <li>Skitsér sammen en event- eller rejseidé til en af dem.</li>
       <li>Send svarene til Jonas.</li>
     </ol>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
@@ -140,15 +140,15 @@ function render(){
     ${INTERVIEW.map(q=>field(st.who+"."+q.k,q,S[st.who][q.k])).join("")}</div>`;
   }
   else if(st.id==="look"){
-    h=`<div class="card">${lab}<h2>Tre lignende virksomheder</h2>
-    <p class="lead">Tag udgangspunkt i jeres to kunder. Hvilke virksomheder ligner dem, men arbejder ikke med os i dag?</p>
-    ${[1,2,3].map(i=>`<label>Virksomhed ${i}</label><input type="text" data-path="F.look${i}" value="${esc(S.F["look"+i])}" placeholder="Navn">
-      <input type="text" data-path="F.why${i}" value="${esc(S.F["why"+i])}" placeholder="Hvorfor de? (kort)" style="margin-top:6px">`).join("")}
+    h=`<div class="card">${lab}<h2>Tre lignende kontaktpersoner</h2>
+    <p class="lead">Tænk på kontaktpersonerne hos jeres to kunder. Hvem ligner dem i rolle og type, men arbejder ikke med os i dag? Navn er valgfrit.</p>
+    ${[1,2,3].map(i=>`<label>Kontaktperson ${i}</label><input type="text" data-path="F.look${i}" value="${esc(S.F["look"+i])}" placeholder="Rolle og virksomhed, fx HR-chef hos X">
+      <input type="text" data-path="F.why${i}" value="${esc(S.F["why"+i])}" placeholder="Hvorfor dem? (kort)" style="margin-top:6px">`).join("")}
     </div>`;
   }
   else if(st.id==="contacts"){
     h=`<div class="card">${lab}<h2>En kontakt at vende?</h2>
-    <p class="lead">Helt frivilligt. Har en af jer en kontakt i en af virksomhederne, som I gerne vil vende med Jonas senere? I bestemmer selv, om og hvornår der skal ske noget.</p>
+    <p class="lead">Helt frivilligt. Kender en af jer nogen af dem personligt, som I gerne vil vende med Jonas senere? I bestemmer selv, om og hvornår der skal ske noget.</p>
     <label>${esc(nm(S.a))}</label>${chips("F.kA",["Ja, gerne en snak","Nej"],S.F.kA)}
     <label>${esc(nm(S.b))}</label>${chips("F.kB",["Ja, gerne en snak","Nej"],S.F.kB)}
     <label>Hvilken virksomhed?<span class="hint">Valgfrit. Ingen navne på personer.</span></label><input type="text" data-path="F.kFirma" value="${esc(S.F.kFirma)}">
@@ -156,8 +156,8 @@ function render(){
   }
   else if(st.id==="msg"){
     h=`<div class="card">${lab}<h2>Idé til en drømmekunde</h2>
-    <p class="lead">Vælg én af jeres tre virksomheder, og skitsér et event eller en rejse, I ville elske at lave for dem. Tænk stort. Det er en idé, ikke et tilbud.</p>
-    <label>Til hvilken virksomhed?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
+    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud.</p>
+    <label>Til hvem?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
     <label>Titel på idéen</label><input type="text" data-path="F.iTitle" value="${esc(S.F.iTitle)}" placeholder="Fx kick-off på en øde ø">
     <label>Hvad skal de opleve?</label><textarea data-path="F.iWhat">${esc(S.F.iWhat)}</textarea>
     <label>Hvorfor passer det lige præcis til dem?</label><textarea data-path="F.iWhy">${esc(S.F.iWhy)}</textarea>
@@ -181,14 +181,14 @@ function nm(x){return x&&x!=="__other"?x:"?"}
 function summaryText(){
   const L=[];L.push(`DRØMMEKUNDER – ${nm(S.a)} & ${nm(S.b)}`,"");
   [["A",S.a],["B",S.b]].forEach(([w,n])=>{L.push(`== ${nm(n)} ==`);INTERVIEW.forEach(q=>L.push(`${q.t}\n${S[w][q.k]||"-"}`,""))});
-  L.push("== Tre lignende virksomheder ==");[1,2,3].forEach(i=>L.push(`${i}. ${S.F["look"+i]||"-"}${S.F["why"+i]?" – "+S.F["why"+i]:""}`));L.push("");
+  L.push("== Tre lignende kontaktpersoner ==");[1,2,3].forEach(i=>L.push(`${i}. ${S.F["look"+i]||"-"}${S.F["why"+i]?" – "+S.F["why"+i]:""}`));L.push("");
   L.push("== Kontakt at vende med Jonas ==",`${nm(S.a)}: ${S.F.kA||"-"}`,`${nm(S.b)}: ${S.F.kB||"-"}`,`Virksomhed: ${S.F.kFirma||"-"}`,"");
   L.push("== Idé til en drømmekunde ==",`Til: ${S.F.iFor||"-"}`,`Titel: ${S.F.iTitle||"-"}`,`Oplevelsen: ${S.F.iWhat||"-"}`,`Hvorfor: ${S.F.iWhy||"-"}`);
   return L.join("\n");
 }
 function summaryHTML(){
   let h="";[["A",S.a],["B",S.b]].forEach(([w,n])=>{h+=`<h3>${esc(nm(n))}</h3>`;INTERVIEW.forEach(q=>h+=`<div class="q">${esc(q.t)}</div><p>${esc(S[w][q.k]||"-")}</p>`)});
-  h+=`<h3>Lignende virksomheder</h3>`+[1,2,3].map(i=>`<p>${i}. ${esc(S.F["look"+i]||"-")}${S.F["why"+i]?" – "+esc(S.F["why"+i]):""}</p>`).join("");
+  h+=`<h3>Lignende kontaktpersoner</h3>`+[1,2,3].map(i=>`<p>${i}. ${esc(S.F["look"+i]||"-")}${S.F["why"+i]?" – "+esc(S.F["why"+i]):""}</p>`).join("");
   h+=`<h3>Kontakt at vende med Jonas</h3><p>${esc(nm(S.a))}: ${esc(S.F.kA||"-")}</p><p>${esc(nm(S.b))}: ${esc(S.F.kB||"-")}</p><p>Virksomhed: ${esc(S.F.kFirma||"-")}</p>`;
   h+=`<h3>Idé til en drømmekunde</h3><p>Til: ${esc(S.F.iFor||"-")}</p><p>${esc(S.F.iTitle||"-")}</p><p>${esc(S.F.iWhat||"-")}</p><p>Hvorfor: ${esc(S.F.iWhy||"-")}</p>`;
   return h;
