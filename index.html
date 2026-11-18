@@ -66,7 +66,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--purple)}
 
 <script>
 const MAIL="jonas@alive.dk";
-const KEY="alive-droemmekunder-v1";
+const KEY="alive-droemmekunder-v2";
 let S={step:0,a:"",b:"",A:{},B:{},F:{contacts:[{}]}};
 try{const s=localStorage.getItem(KEY);if(s)S=JSON.parse(s)}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -119,8 +119,8 @@ function render(){
       <li>Skriv jeres navne. Brug én telefon pr. par.</li>
       <li>Interview hinanden på skift i ca. 10 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
       <li>Find sammen tre virksomheder, der ligner jeres kunder.</li>
-      <li>Skriv det ned, hvis I kender nogen derinde. Det er frivilligt.</li>
-      <li>Skriv en kort åbningsbesked, der kan sendes på mandag.</li>
+      <li>Sig til, hvis I har en kontakt, I gerne vil vende med Jonas senere. Det er helt frivilligt.</li>
+      <li>Skitsér sammen en event- eller rejseidé til en af virksomhederne.</li>
       <li>Send svarene til Jonas.</li>
     </ol>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
@@ -147,25 +147,21 @@ function render(){
     </div>`;
   }
   else if(st.id==="contacts"){
-    h=`<div class="card">${lab}<h2>Kender I nogen?</h2>
-    <p class="lead">Det er frivilligt. Skriv kun det, I har lyst til at dele. En varm kontakt er mere værd end ti kolde mails.</p>
-    ${S.F.contacts.map((c,i)=>`<div class="contact">
-      <div class="row"><div><label>Navn</label><input type="text" data-path="F.contacts.${i}.navn" value="${esc(c.navn)}"></div>
-      <div><label>Virksomhed</label><input type="text" data-path="F.contacts.${i}.firma" value="${esc(c.firma)}"></div></div>
-      <div class="row"><div><label>Rolle</label><input type="text" data-path="F.contacts.${i}.rolle" value="${esc(c.rolle)}"></div>
-      <div><label>Hvem kender personen?</label><input type="text" data-path="F.contacts.${i}.kender" value="${esc(c.kender)}" placeholder="Og hvordan"></div></div>
-      <label>Må vi nævne dit navn?</label>${chips(`F.contacts.${i}.naevn`,["Ja","Spørg mig først","Nej"],c.naevn)}
-    </div>`).join("")}
-    <button class="btn small ghost" id="addc" type="button" style="margin-top:12px">Tilføj kontakt</button></div>`;
+    h=`<div class="card">${lab}<h2>En kontakt at vende?</h2>
+    <p class="lead">Helt frivilligt. Har en af jer en kontakt i en af virksomhederne, som I gerne vil vende med Jonas senere? I bestemmer selv, om og hvornår der skal ske noget.</p>
+    <label>${esc(nm(S.a))}</label>${chips("F.kA",["Ja, gerne en snak","Nej"],S.F.kA)}
+    <label>${esc(nm(S.b))}</label>${chips("F.kB",["Ja, gerne en snak","Nej"],S.F.kB)}
+    <label>Hvilken virksomhed?<span class="hint">Valgfrit. Ingen navne på personer.</span></label><input type="text" data-path="F.kFirma" value="${esc(S.F.kFirma)}">
+    </div>`;
   }
   else if(st.id==="msg"){
-    h=`<div class="card">${lab}<h2>Første besked</h2>
-    <p class="lead">Vælg én af jeres virksomheder eller kontakter, og skriv en kort åbningsbesked, der kan sendes på mandag. Hold den personlig, konkret og på max 5 linjer.</p>
-    <label>Til hvem?</label><input type="text" data-path="F.msgTo" value="${esc(S.F.msgTo)}" placeholder="Navn, virksomhed">
-    <label>Beskeden</label><textarea data-path="F.msg" maxlength="700" style="min-height:150px">${esc(S.F.msg)}</textarea>
-    <div class="counter" id="cnt"></div>
-    <div class="row"><div><label>Hvem sender den?</label><input type="text" data-path="F.owner" value="${esc(S.F.owner)}"></div>
-    <div><label>Hvornår?</label><input type="text" data-path="F.when" value="${esc(S.F.when)}" placeholder="F.eks. mandag"></div></div></div>`;
+    h=`<div class="card">${lab}<h2>Idé til en drømmekunde</h2>
+    <p class="lead">Vælg én af jeres tre virksomheder, og skitsér et event eller en rejse, I ville elske at lave for dem. Tænk stort. Det er en idé, ikke et tilbud.</p>
+    <label>Til hvilken virksomhed?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
+    <label>Titel på idéen</label><input type="text" data-path="F.iTitle" value="${esc(S.F.iTitle)}" placeholder="Fx kick-off på en øde ø">
+    <label>Hvad skal de opleve?</label><textarea data-path="F.iWhat">${esc(S.F.iWhat)}</textarea>
+    <label>Hvorfor passer det lige præcis til dem?</label><textarea data-path="F.iWhy">${esc(S.F.iWhy)}</textarea>
+    </div>`;
   }
   else if(st.id==="sum"){
     h=`<div class="card summary"><h2>Klar til at sende</h2>
@@ -186,17 +182,15 @@ function summaryText(){
   const L=[];L.push(`DRØMMEKUNDER – ${nm(S.a)} & ${nm(S.b)}`,"");
   [["A",S.a],["B",S.b]].forEach(([w,n])=>{L.push(`== ${nm(n)} ==`);INTERVIEW.forEach(q=>L.push(`${q.t}\n${S[w][q.k]||"-"}`,""))});
   L.push("== Tre lignende virksomheder ==");[1,2,3].forEach(i=>L.push(`${i}. ${S.F["look"+i]||"-"}${S.F["why"+i]?" – "+S.F["why"+i]:""}`));L.push("");
-  L.push("== Kontakter ==");S.F.contacts.filter(c=>c.navn||c.firma).forEach(c=>L.push(`${c.navn||"-"}, ${c.rolle||"-"}, ${c.firma||"-"}. Kendt af: ${c.kender||"-"}. Må nævnes: ${c.naevn||"-"}`));
-  if(!S.F.contacts.some(c=>c.navn||c.firma))L.push("Ingen");L.push("");
-  L.push("== Første besked ==",`Til: ${S.F.msgTo||"-"}`,S.F.msg||"-",`Sendes af: ${S.F.owner||"-"}, hvornår: ${S.F.when||"-"}`);
+  L.push("== Kontakt at vende med Jonas ==",`${nm(S.a)}: ${S.F.kA||"-"}`,`${nm(S.b)}: ${S.F.kB||"-"}`,`Virksomhed: ${S.F.kFirma||"-"}`,"");
+  L.push("== Idé til en drømmekunde ==",`Til: ${S.F.iFor||"-"}`,`Titel: ${S.F.iTitle||"-"}`,`Oplevelsen: ${S.F.iWhat||"-"}`,`Hvorfor: ${S.F.iWhy||"-"}`);
   return L.join("\n");
 }
 function summaryHTML(){
   let h="";[["A",S.a],["B",S.b]].forEach(([w,n])=>{h+=`<h3>${esc(nm(n))}</h3>`;INTERVIEW.forEach(q=>h+=`<div class="q">${esc(q.t)}</div><p>${esc(S[w][q.k]||"-")}</p>`)});
   h+=`<h3>Lignende virksomheder</h3>`+[1,2,3].map(i=>`<p>${i}. ${esc(S.F["look"+i]||"-")}${S.F["why"+i]?" – "+esc(S.F["why"+i]):""}</p>`).join("");
-  const cs=S.F.contacts.filter(c=>c.navn||c.firma);
-  h+=`<h3>Kontakter</h3>`+(cs.length?cs.map(c=>`<p>${esc(c.navn||"-")}, ${esc(c.rolle||"-")}, ${esc(c.firma||"-")}. Kendt af: ${esc(c.kender||"-")}. Må nævnes: ${esc(c.naevn||"-")}</p>`).join(""):"<p>Ingen</p>");
-  h+=`<h3>Første besked</h3><p><b>Til:</b> ${esc(S.F.msgTo||"-")}</p><p>${esc(S.F.msg||"-")}</p><p>Sendes af ${esc(S.F.owner||"-")}, ${esc(S.F.when||"-")}</p>`;
+  h+=`<h3>Kontakt at vende med Jonas</h3><p>${esc(nm(S.a))}: ${esc(S.F.kA||"-")}</p><p>${esc(nm(S.b))}: ${esc(S.F.kB||"-")}</p><p>Virksomhed: ${esc(S.F.kFirma||"-")}</p>`;
+  h+=`<h3>Idé til en drømmekunde</h3><p>Til: ${esc(S.F.iFor||"-")}</p><p>${esc(S.F.iTitle||"-")}</p><p>${esc(S.F.iWhat||"-")}</p><p>Hvorfor: ${esc(S.F.iWhy||"-")}</p>`;
   return h;
 }
 function flash(t){const o=document.getElementById("ok");o.textContent=t;o.style.display="block"}
