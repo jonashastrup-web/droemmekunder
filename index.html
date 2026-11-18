@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALIVE – Drømmekunder</title>
+<style>
+:root{--purple:#292240;--grey:#F5F5F0;--grey-dark:#E9E9DF;--red:#FF623F;--red-dark:#E34D2B;--yellow:#FFB20A;--blue:#0061B1;--green:#00786D;--pink:#F4B4D4;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--grey);color:var(--purple);font:16px/1.4 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:18px 20px;background:#fff;border-bottom:1px solid var(--grey-dark)}
+header img{height:34px}
+header h1{margin:0;font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
+header p{margin:2px 0 0;font-size:13px;opacity:.75}
+.progress{height:6px;background:var(--grey-dark)}
+.progress div{height:100%;background:var(--red);width:0;transition:width .3s}
+main{max-width:720px;margin:0 auto;padding:20px 16px 120px}
+.card{background:#fff;border-radius:14px;padding:22px;margin-bottom:16px}
+.step-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red-dark);margin-bottom:6px}
+h2{margin:0 0 6px;font-size:24px;font-weight:800}
+.lead{margin:0 0 18px;opacity:.85}
+label{display:block;font-weight:600;margin:18px 0 6px}
+.hint{display:block;font-weight:400;font-size:13px;opacity:.7;margin-top:2px}
+input[type=text],textarea,select{width:100%;padding:12px 14px;border:1.5px solid var(--grey-dark);border-radius:10px;font:inherit;color:inherit;background:#fff}
+textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--purple)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{border:1.5px solid var(--grey-dark);background:#fff;border-radius:999px;padding:9px 14px;font:inherit;font-size:14px;color:inherit;cursor:pointer}
+.chips button.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.contact{border:1.5px dashed var(--grey-dark);border-radius:12px;padding:4px 14px 14px;margin-top:12px}
+.nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--grey-dark);padding:12px 16px}
+.nav .in{max-width:720px;margin:0 auto;display:flex;gap:10px;justify-content:space-between}
+.btn{border:0;border-radius:10px;padding:13px 20px;font:inherit;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--red);color:#fff}
+.btn.primary:hover{background:var(--red-dark)}
+.btn.ghost{background:var(--grey);color:var(--purple)}
+.btn.small{padding:8px 14px;font-size:14px}
+.timer{display:flex;align-items:center;gap:12px;background:var(--grey);border-radius:12px;padding:10px 14px;margin-bottom:6px}
+.timer b{font-size:22px;font-variant-numeric:tabular-nums;min-width:64px}
+.timer.done{background:var(--yellow)}
+.who{display:inline-block;background:var(--pink);border-radius:999px;padding:3px 12px;font-weight:700;font-size:14px}
+.summary h3{margin:22px 0 6px;font-size:16px;font-weight:800;text-transform:uppercase}
+.summary p{margin:4px 0;white-space:pre-wrap}
+.summary .q{font-size:13px;opacity:.7;margin-top:10px}
+.ok{background:var(--green);color:#fff;border-radius:12px;padding:14px 16px;margin-top:14px;display:none}
+.warn{font-size:13px;opacity:.75;margin-top:10px}
+.hidden{display:none}
+.counter{font-size:12px;opacity:.6;text-align:right;margin-top:4px}
+</style>
+</head>
+<body>
+<header>
+  <img src="https://alive.dk/wp-content/uploads/logo_black.svg" alt="ALIVE">
+  <div><h1>Drømmekunder</h1><p>Togøvelse København–Stockholm · 2 og 2 · ca. 60 min.</p></div>
+</header>
+<div class="progress"><div id="bar"></div></div>
+<main id="app"></main>
+<div class="nav"><div class="in">
+  <button class="btn ghost" id="back">Tilbage</button>
+  <button class="btn primary" id="next">Næste</button>
+</div></div>
+
+<script>
+const MAIL="jonas@alive.dk";
+const KEY="alive-droemmekunder-v1";
+let S={step:0,a:"",b:"",A:{},B:{},F:{contacts:[{}]}};
+try{const s=localStorage.getItem(KEY);if(s)S=JSON.parse(s)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const INTERVIEW=[
+ {k:"kunde",t:"Hvilken kunde elsker du at arbejde sammen med?",h:"Vælg én. Gerne en, som ikke er den mest oplagte.",type:"text"},
+ {k:"hvorfor",t:"Hvorfor elsker du at arbejde med dem?",h:"Hvad gør samarbejdet godt? Mennesker, opgaver, tillid, tempo …"},
+ {k:"kendetegn",t:"Hvad kendetegner dem?",h:"Branche, størrelse, typer opgaver (event/rejse), hvem der beslutter, budgetniveau."},
+ {k:"forretning",t:"Er de også en god forretning for os?",type:"chips",o:["Ja, klart","Middel","Nej, men de er gode at arbejde med","Ved ikke"]},
+ {k:"start",t:"Hvordan blev de kunde hos os?",h:"Anbefaling, netværk, udbud, opsøgende salg, Aller …"},
+ {k:"flere",t:"Hvad skal der til for at få flere kunder som dem?",h:"Hvor finder vi dem, og hvad skal vi sige eller gøre anderledes?"}
+];
+
+const steps=[
+ {id:"intro"},{id:"pair"},{id:"int",who:"A"},{id:"int",who:"B"},{id:"look"},{id:"contacts"},{id:"msg"},{id:"sum"}
+];
+
+function chips(path,opts,val){return `<div class="chips">${opts.map(o=>`<button type="button" data-path="${path}" data-val="${esc(o)}" class="${val===o?"on":""}">${esc(o)}</button>`).join("")}</div>`}
+function field(path,q,val){
+  if(q.type==="chips")return `<label>${esc(q.t)}${q.h?`<span class="hint">${esc(q.h)}</span>`:""}</label>${chips(path,q.o,val)}`;
+  if(q.type==="text")return `<label>${esc(q.t)}${q.h?`<span class="hint">${esc(q.h)}</span>`:""}</label><input type="text" data-path="${path}" value="${esc(val)}">`;
+  return `<label>${esc(q.t)}${q.h?`<span class="hint">${esc(q.h)}</span>`:""}</label><textarea data-path="${path}">${esc(val)}</textarea>`;
+}
+function get(path){return path.split(".").reduce((o,k)=>o==null?undefined:o[k],S)}
+function set(path,v){const ks=path.split(".");let o=S;ks.slice(0,-1).forEach(k=>{if(o[k]==null)o[k]={};o=o[k]});o[ks.at(-1)]=v;save()}
+
+let timerInt=null,timerLeft=600;
+function timerHTML(){return `<div class="timer" id="timer"><b id="tt">10:00</b><span style="flex:1">Ca. 10 minutter pr. interview</span><button class="btn small ghost" id="tbtn" type="button">Start</button></div>`}
+function bindTimer(){
+  clearInterval(timerInt);timerInt=null;timerLeft=600;
+  const b=document.getElementById("tbtn");if(!b)return;
+  const draw=()=>{const m=Math.floor(timerLeft/60),s=timerLeft%60;document.getElementById("tt").textContent=`${m}:${String(s).padStart(2,"0")}`;document.getElementById("timer").classList.toggle("done",timerLeft<=0)};
+  b.onclick=()=>{if(timerInt){clearInterval(timerInt);timerInt=null;b.textContent="Fortsæt";return}
+    b.textContent="Pause";timerInt=setInterval(()=>{timerLeft=Math.max(0,timerLeft-1);draw();if(timerLeft<=0){clearInterval(timerInt);timerInt=null;b.textContent="Tiden er gået"}},1000)};
+}
+
+function render(){
+  const st=steps[S.step],app=document.getElementById("app");
+  document.getElementById("bar").style.width=(S.step/(steps.length-1)*100)+"%";
+  document.getElementById("back").style.visibility=S.step===0?"hidden":"visible";
+  document.getElementById("next").textContent=S.step===0?"Kom i gang":st.id==="sum"?"Start forfra":"Næste";
+  const lab=`<div class="step-label">Trin ${S.step} af ${steps.length-2}</div>`;
+  let h="";
+  if(st.id==="intro"){
+    h=`<div class="card"><h2>Hvem elsker vi at arbejde med?</h2>
+    <p class="lead">I skal finde ud af, hvilke kunder der gør vores arbejde godt, og hvordan vi får flere af dem.</p>
+    <p><b>Sådan gør I</b></p>
+    <ol>
+      <li>Skriv jeres navne. Brug én telefon pr. par.</li>
+      <li>Interview hinanden på skift i ca. 10 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
+      <li>Find sammen tre virksomheder, der ligner jeres kunder.</li>
+      <li>Skriv det ned, hvis I kender nogen derinde. Det er frivilligt.</li>
+      <li>Skriv en kort åbningsbesked, der kan sendes på mandag.</li>
+      <li>Send svarene til Jonas.</li>
+    </ol>
+    <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
+  }
+  else if(st.id==="pair"){
+    h=`<div class="card">${lab}<h2>Hvem er I?</h2>
+    <p class="lead">I udfylder appen sammen på én telefon.</p>
+    <div class="row">
+      <div><label>Person 1</label><input type="text" data-path="a" value="${esc(S.a)}" placeholder="Fornavn" autocomplete="off"></div>
+      <div><label>Person 2</label><input type="text" data-path="b" value="${esc(S.b)}" placeholder="Fornavn" autocomplete="off"></div>
+    </div></div>`;
+  }
+  else if(st.id==="int"){
+    const me=st.who==="A"?S.a:S.b,you=st.who==="A"?S.b:S.a;
+    h=`<div class="card">${lab}<h2>Interview: <span class="who">${esc(me||"Person")}</span></h2>
+    <p class="lead">${esc(you||"Den anden")} spørger og skriver. ${esc(me||"")} svarer.</p>${timerHTML()}
+    ${INTERVIEW.map(q=>field(st.who+"."+q.k,q,S[st.who][q.k])).join("")}</div>`;
+  }
+  else if(st.id==="look"){
+    h=`<div class="card">${lab}<h2>Tre lignende virksomheder</h2>
+    <p class="lead">Tag udgangspunkt i jeres to kunder. Hvilke virksomheder ligner dem, men arbejder ikke med os i dag?</p>
+    ${[1,2,3].map(i=>`<label>Virksomhed ${i}</label><input type="text" data-path="F.look${i}" value="${esc(S.F["look"+i])}" placeholder="Navn">
+      <input type="text" data-path="F.why${i}" value="${esc(S.F["why"+i])}" placeholder="Hvorfor de? (kort)" style="margin-top:6px">`).join("")}
+    </div>`;
+  }
+  else if(st.id==="contacts"){
+    h=`<div class="card">${lab}<h2>Kender I nogen?</h2>
+    <p class="lead">Det er frivilligt. Skriv kun det, I har lyst til at dele. En varm kontakt er mere værd end ti kolde mails.</p>
+    ${S.F.contacts.map((c,i)=>`<div class="contact">
+      <div class="row"><div><label>Navn</label><input type="text" data-path="F.contacts.${i}.navn" value="${esc(c.navn)}"></div>
+      <div><label>Virksomhed</label><input type="text" data-path="F.contacts.${i}.firma" value="${esc(c.firma)}"></div></div>
+      <div class="row"><div><label>Rolle</label><input type="text" data-path="F.contacts.${i}.rolle" value="${esc(c.rolle)}"></div>
+      <div><label>Hvem kender personen?</label><input type="text" data-path="F.contacts.${i}.kender" value="${esc(c.kender)}" placeholder="Og hvordan"></div></div>
+      <label>Må vi nævne dit navn?</label>${chips(`F.contacts.${i}.naevn`,["Ja","Spørg mig først","Nej"],c.naevn)}
+    </div>`).join("")}
+    <button class="btn small ghost" id="addc" type="button" style="margin-top:12px">Tilføj kontakt</button></div>`;
+  }
+  else if(st.id==="msg"){
+    h=`<div class="card">${lab}<h2>Første besked</h2>
+    <p class="lead">Vælg én af jeres virksomheder eller kontakter, og skriv en kort åbningsbesked, der kan sendes på mandag. Hold den personlig, konkret og på max 5 linjer.</p>
+    <label>Til hvem?</label><input type="text" data-path="F.msgTo" value="${esc(S.F.msgTo)}" placeholder="Navn, virksomhed">
+    <label>Beskeden</label><textarea data-path="F.msg" maxlength="700" style="min-height:150px">${esc(S.F.msg)}</textarea>
+    <div class="counter" id="cnt"></div>
+    <div class="row"><div><label>Hvem sender den?</label><input type="text" data-path="F.owner" value="${esc(S.F.owner)}"></div>
+    <div><label>Hvornår?</label><input type="text" data-path="F.when" value="${esc(S.F.when)}" placeholder="F.eks. mandag"></div></div></div>`;
+  }
+  else if(st.id==="sum"){
+    h=`<div class="card summary"><h2>Klar til at sende</h2>
+    <p class="lead">Tjek svarene, og send dem til Jonas. Virker mail-knappen ikke, så brug "Kopiér" eller "Download".</p>
+    <div class="chips" style="margin-bottom:6px">
+      <button type="button" class="btn primary" id="mail">Send til Jonas</button>
+      <button type="button" class="btn ghost" id="copy">Kopiér svar</button>
+      <button type="button" class="btn ghost" id="dl">Download</button>
+    </div>
+    <div class="ok" id="ok"></div>
+    <div id="sumtxt">${summaryHTML()}</div></div>`;
+  }
+  app.innerHTML=h;window.scrollTo(0,0);bind();
+}
+
+function nm(x){return x&&x!=="__other"?x:"?"}
+function summaryText(){
+  const L=[];L.push(`DRØMMEKUNDER – ${nm(S.a)} & ${nm(S.b)}`,"");
+  [["A",S.a],["B",S.b]].forEach(([w,n])=>{L.push(`== ${nm(n)} ==`);INTERVIEW.forEach(q=>L.push(`${q.t}\n${S[w][q.k]||"-"}`,""))});
+  L.push("== Tre lignende virksomheder ==");[1,2,3].forEach(i=>L.push(`${i}. ${S.F["look"+i]||"-"}${S.F["why"+i]?" – "+S.F["why"+i]:""}`));L.push("");
+  L.push("== Kontakter ==");S.F.contacts.filter(c=>c.navn||c.firma).forEach(c=>L.push(`${c.navn||"-"}, ${c.rolle||"-"}, ${c.firma||"-"}. Kendt af: ${c.kender||"-"}. Må nævnes: ${c.naevn||"-"}`));
+  if(!S.F.contacts.some(c=>c.navn||c.firma))L.push("Ingen");L.push("");
+  L.push("== Første besked ==",`Til: ${S.F.msgTo||"-"}`,S.F.msg||"-",`Sendes af: ${S.F.owner||"-"}, hvornår: ${S.F.when||"-"}`);
+  return L.join("\n");
+}
+function summaryHTML(){
+  let h="";[["A",S.a],["B",S.b]].forEach(([w,n])=>{h+=`<h3>${esc(nm(n))}</h3>`;INTERVIEW.forEach(q=>h+=`<div class="q">${esc(q.t)}</div><p>${esc(S[w][q.k]||"-")}</p>`)});
+  h+=`<h3>Lignende virksomheder</h3>`+[1,2,3].map(i=>`<p>${i}. ${esc(S.F["look"+i]||"-")}${S.F["why"+i]?" – "+esc(S.F["why"+i]):""}</p>`).join("");
+  const cs=S.F.contacts.filter(c=>c.navn||c.firma);
+  h+=`<h3>Kontakter</h3>`+(cs.length?cs.map(c=>`<p>${esc(c.navn||"-")}, ${esc(c.rolle||"-")}, ${esc(c.firma||"-")}. Kendt af: ${esc(c.kender||"-")}. Må nævnes: ${esc(c.naevn||"-")}</p>`).join(""):"<p>Ingen</p>");
+  h+=`<h3>Første besked</h3><p><b>Til:</b> ${esc(S.F.msgTo||"-")}</p><p>${esc(S.F.msg||"-")}</p><p>Sendes af ${esc(S.F.owner||"-")}, ${esc(S.F.when||"-")}</p>`;
+  return h;
+}
+function flash(t){const o=document.getElementById("ok");o.textContent=t;o.style.display="block"}
+
+function bind(){
+  document.querySelectorAll("[data-path]").forEach(el=>{
+    if(el.tagName==="BUTTON")el.onclick=()=>{set(el.dataset.path,el.dataset.val);el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el))};
+    else el.oninput=()=>{set(el.dataset.path,el.value);cnt()};
+  });
+  document.querySelectorAll("select[data-name]").forEach(el=>el.onchange=()=>{const k=el.dataset.name;S[k]=el.value;save();const o=document.querySelector(`[data-other=${k}]`);o.classList.toggle("hidden",el.value!=="__other");if(el.value==="__other")o.focus()});
+  document.querySelectorAll("[data-other]").forEach(el=>el.oninput=()=>{S[el.dataset.other]=el.value||"__other";save()});
+  const add=document.getElementById("addc");if(add)add.onclick=()=>{S.F.contacts.push({});save();render()};
+  bindTimer();cnt();
+  const m=document.getElementById("mail");
+  if(m){
+    m.onclick=()=>{let body=summaryText();if(body.length>1800){navigator.clipboard?.writeText(body).catch(()=>{});body=body.slice(0,1700)+"\n\n[Teksten var for lang til mailen. Hele svaret er kopieret, så sæt det ind her i mailen.]"}
+      location.href=`mailto:${MAIL}?subject=${encodeURIComponent("Drømmekunder – "+nm(S.a)+" & "+nm(S.b))}&body=${encodeURIComponent(body)}`;flash("Mailen åbnes i jeres mailprogram. Husk at trykke send.")};
+    document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(summaryText());flash("Kopieret. Sæt det ind i en mail til Jonas.")}catch(e){flash("Kunne ikke kopiere automatisk. Brug Download i stedet.")}};
+    document.getElementById("dl").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([summaryText()],{type:"text/plain;charset=utf-8"}));a.download=`Droemmekunder_${nm(S.a)}_${nm(S.b)}.txt`;a.click();flash("Filen er downloadet. Send den til Jonas.")};
+  }
+}
+function cnt(){const c=document.getElementById("cnt");if(c)c.textContent=`${(S.F.msg||"").length}/700 tegn`}
+
+document.getElementById("next").onclick=()=>{
+  const st=steps[S.step];
+  if(st.id==="pair"&&(!S.a.trim()||!S.b.trim())){alert("Skriv begge navne først.");return}
+  if(st.id==="sum"){if(confirm("Start forfra? Jeres svar slettes fra denne browser.")){S={step:0,a:"",b:"",A:{},B:{},F:{contacts:[{}]}};save();render()}return}
+  S.step=Math.min(steps.length-1,S.step+1);save();render()};
+document.getElementById("back").onclick=()=>{S.step=Math.max(0,S.step-1);save();render()};
+render();
+</script>
+</body>
+</html>
