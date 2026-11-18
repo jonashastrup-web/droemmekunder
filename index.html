@@ -50,6 +50,8 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--purple)}
 .warn{font-size:13px;opacity:.75;margin-top:10px}
 .hidden{display:none}
 .opt{margin:26px 0 0;padding-top:14px;border-top:1.5px dashed var(--grey-dark);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.6}
+.prize{background:var(--yellow);border-radius:12px;padding:14px 16px;margin-top:16px}
+.prize ul{margin:6px 0 6px;padding-left:20px}
 .counter{font-size:12px;opacity:.6;text-align:right;margin-top:4px}
 </style>
 </head>
@@ -124,6 +126,7 @@ function render(){
       <li>Skitsér sammen en event- eller rejseidé til en af dem.</li>
       <li>Aflever jeres idé.</li>
     </ol>
+    <div class="prize"><b>Der er præmier på spil</b><br>Der venter en ret så fed præmie i tre kategorier:<ul><li>Det sjoveste bud</li><li>Det bedste bud</li><li>Det mest gennemførte bud</li></ul>Vinderne bliver kåret i Stockholm. I skal ikke præsentere noget.</div>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
   }
   else if(st.id==="pair"){
@@ -157,7 +160,7 @@ function render(){
   }
   else if(st.id==="msg"){
     h=`<div class="card">${lab}<h2>Idé til en drømmekunde</h2>
-    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud.</p>
+    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud. Der er præmier til det sjoveste, det bedste og det mest gennemførte bud.</p>
     <label>Til hvem?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
     <label>Titel på idéen</label><input type="text" data-path="F.iTitle" value="${esc(S.F.iTitle)}" placeholder="Fx kick-off på en øde ø">
     <label>Hvad skal de opleve?</label><textarea data-path="F.iWhat">${esc(S.F.iWhat)}</textarea>
@@ -166,7 +169,7 @@ function render(){
   }
   else if(st.id==="sum"){
     h=`<div class="card summary"><h2>Klar til at aflevere</h2>
-    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
+    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Alle afleveringer er med i konkurrencen om præmierne. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
     <div class="chips" style="margin-bottom:6px">
       <button type="button" class="btn primary" id="mail">Aflever jeres idé</button>
       <button type="button" class="btn ghost" id="copy">Kopiér svar</button>
