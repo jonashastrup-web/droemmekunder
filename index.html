@@ -118,7 +118,7 @@ function render(){
   const st=steps[S.step],app=document.getElementById("app");
   document.getElementById("bar").style.width=(S.step/(steps.length-1)*100)+"%";
   document.getElementById("back").style.visibility=S.step===0?"hidden":"visible";
-  document.getElementById("next").textContent=S.step===0?"Kom i gang":st.id==="sum"?"Start forfra":"Næste";
+  document.getElementById("next").textContent=S.step===0?"Kom i gang":st.id==="sum"?"Færdig":"Næste";
   const lab=`<div class="step-label">Trin ${S.step} af ${steps.length-2}</div>`;
   let h="";
   if(st.id==="intro"){
@@ -253,7 +253,7 @@ function cnt(){const c=document.getElementById("cnt");if(c)c.textContent=`${(S.F
 document.getElementById("next").onclick=()=>{
   const st=steps[S.step];
   if(st.id==="pair"&&(!S.a.trim()||!S.b.trim())){alert("Skriv begge navne først.");return}
-  if(st.id==="sum"){if(confirm("Start forfra? Jeres svar slettes fra denne browser.")){S={step:0,a:"",b:"",A:{},B:{},F:{contacts:[{}]}};save();render()}return}
+  if(st.id==="sum"){flash("Tak for jeres svar! Har I trykket Send i mailen, er I færdige. God tur til Stockholm.");document.getElementById("ok").scrollIntoView({behavior:"smooth"});return}
   S.step=Math.min(steps.length-1,S.step+1);save();render()};
 document.getElementById("back").onclick=()=>{S.step=Math.max(0,S.step-1);save();render()};
 render();
