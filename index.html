@@ -116,17 +116,17 @@ function render(){
   let h="";
   if(st.id==="intro"){
     h=`<div class="card"><h2>Hvem elsker vi at arbejde med?</h2>
-    <p class="lead">I skal finde ud af, hvilke kunder der gør vores arbejde godt, og hvordan vi får flere af dem.</p>
+    <p class="lead">I skal finde ud af, hvilke kunder vi godt kan lide at arbejde med, og hvordan vi får flere af dem.</p>
     <p><b>Sådan gør I</b></p>
     <ol>
       <li>Skriv jeres navne. Brug én telefon pr. par.</li>
       <li>Interview hinanden på skift i ca. 8 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
       <li>Find sammen tre kontaktpersoner, der ligner dem, I elsker at arbejde med.</li>
-      <li>Sig til, hvis I har en kontakt, I gerne vil vende med Jonas senere. Det er helt frivilligt.</li>
+      <li>Tænk evt. på, om I har nogen i jeres netværk, som kunne være drømmekunden.</li>
       <li>Skitsér sammen en event- eller rejseidé til en af dem.</li>
       <li>Aflever jeres idé.</li>
     </ol>
-    <div class="prize"><b>Der er præmier på spil</b><br>Der venter en ret så fed præmie i tre kategorier:<ul><li>Det sjoveste bud</li><li>Det bedste bud</li><li>Det mest gennemførte bud</li></ul>Vinderne bliver kåret i Stockholm. I skal ikke præsentere noget, men har I lyst, får I ordet til middagen fredag aften.</div>
+    <div class="prize"><b>De bedste svar giver point til fredagens quiz, som man gerne vil vinde!</b><ul><li>Det sjoveste bud</li><li>Det bedste bud</li><li>Det mest gennemførte bud</li></ul>I skal ikke præsentere noget, medmindre man virkelig gerne vil fredag eftermiddag.</div>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
   }
   else if(st.id==="pair"){
@@ -151,16 +151,16 @@ function render(){
     </div>`;
   }
   else if(st.id==="contacts"){
-    h=`<div class="card">${lab}<h2>En kontakt at vende?</h2>
-    <p class="lead">Helt frivilligt. Kender en af jer nogen af dem personligt, som I gerne vil vende med Jonas senere? I bestemmer selv, om og hvornår der skal ske noget.</p>
-    <label>${esc(nm(S.a))}</label>${chips("F.kA",["Ja, gerne en snak","Nej"],S.F.kA)}
-    <label>${esc(nm(S.b))}</label>${chips("F.kB",["Ja, gerne en snak","Nej"],S.F.kB)}
-    <label>Hvilken virksomhed?<span class="hint">Valgfrit. Ingen navne på personer.</span></label><input type="text" data-path="F.kFirma" value="${esc(S.F.kFirma)}">
+    h=`<div class="card">${lab}<h2>Nogen i jeres netværk?</h2>
+    <p class="lead">Helt frivilligt. Tænk over, om I har nogen i jeres netværk, som kunne være drømmekunden. I bestemmer selv, om og hvornår der skal ske noget.</p>
+    <label>${esc(nm(S.a))}</label>${chips("F.kA",["Ja, måske","Nej"],S.F.kA)}
+    <label>${esc(nm(S.b))}</label>${chips("F.kB",["Ja, måske","Nej"],S.F.kB)}
+    <label>Hvilken virksomhed?<span class="hint">Valgfrit.</span></label><input type="text" data-path="F.kFirma" value="${esc(S.F.kFirma)}">
     </div>`;
   }
   else if(st.id==="msg"){
     h=`<div class="card">${lab}<h2>Idé til en drømmekunde</h2>
-    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud. Der er præmier til det sjoveste, det bedste og det mest gennemførte bud.</p>
+    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud. De bedste svar giver point til fredagens quiz: det sjoveste, det bedste og det mest gennemførte bud.</p>
     <label>Til hvem?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
     <label>Titel på idéen</label><input type="text" data-path="F.iTitle" value="${esc(S.F.iTitle)}" placeholder="Fx kick-off på en øde ø">
     <label>Hvad skal de opleve?</label><textarea data-path="F.iWhat">${esc(S.F.iWhat)}</textarea>
@@ -169,7 +169,7 @@ function render(){
   }
   else if(st.id==="sum"){
     h=`<div class="card summary"><h2>Klar til at aflevere</h2>
-    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Alle afleveringer er med i konkurrencen om præmierne. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
+    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Alle afleveringer kan give point til fredagens quiz. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
     <div class="chips" style="margin-bottom:6px">
       <button type="button" class="btn primary" id="mail">Aflever jeres idé</button>
       <button type="button" class="btn ghost" id="copy">Kopiér svar</button>
@@ -186,14 +186,14 @@ function summaryText(){
   const L=[];L.push(`DRØMMEKUNDER – ${nm(S.a)} & ${nm(S.b)}`,"");
   [["A",S.a],["B",S.b]].forEach(([w,n])=>{L.push(`== ${nm(n)} ==`);INTERVIEW.forEach(q=>L.push(`${q.t}\n${S[w][q.k]||"-"}`,""))});
   L.push("== Tre lignende kontaktpersoner ==");[1,2,3].forEach(i=>L.push(`${i}. ${S.F["look"+i]||"-"}${S.F["why"+i]?" – "+S.F["why"+i]:""}`));L.push("");
-  L.push("== Kontakt at vende med Jonas ==",`${nm(S.a)}: ${S.F.kA||"-"}`,`${nm(S.b)}: ${S.F.kB||"-"}`,`Virksomhed: ${S.F.kFirma||"-"}`,"");
+  L.push("== Nogen i netværket ==",`${nm(S.a)}: ${S.F.kA||"-"}`,`${nm(S.b)}: ${S.F.kB||"-"}`,`Virksomhed: ${S.F.kFirma||"-"}`,"");
   L.push("== Idé til en drømmekunde ==",`Til: ${S.F.iFor||"-"}`,`Titel: ${S.F.iTitle||"-"}`,`Oplevelsen: ${S.F.iWhat||"-"}`,`Hvorfor: ${S.F.iWhy||"-"}`);
   return L.join("\n");
 }
 function summaryHTML(){
   let h="";[["A",S.a],["B",S.b]].forEach(([w,n])=>{h+=`<h3>${esc(nm(n))}</h3>`;INTERVIEW.forEach(q=>h+=`<div class="q">${esc(q.t)}</div><p>${esc(S[w][q.k]||"-")}</p>`)});
   h+=`<h3>Lignende kontaktpersoner</h3>`+[1,2,3].map(i=>`<p>${i}. ${esc(S.F["look"+i]||"-")}${S.F["why"+i]?" – "+esc(S.F["why"+i]):""}</p>`).join("");
-  h+=`<h3>Kontakt at vende med Jonas</h3><p>${esc(nm(S.a))}: ${esc(S.F.kA||"-")}</p><p>${esc(nm(S.b))}: ${esc(S.F.kB||"-")}</p><p>Virksomhed: ${esc(S.F.kFirma||"-")}</p>`;
+  h+=`<h3>Nogen i netværket</h3><p>${esc(nm(S.a))}: ${esc(S.F.kA||"-")}</p><p>${esc(nm(S.b))}: ${esc(S.F.kB||"-")}</p><p>Virksomhed: ${esc(S.F.kFirma||"-")}</p>`;
   h+=`<h3>Idé til en drømmekunde</h3><p>Til: ${esc(S.F.iFor||"-")}</p><p>${esc(S.F.iTitle||"-")}</p><p>${esc(S.F.iWhat||"-")}</p><p>Hvorfor: ${esc(S.F.iWhy||"-")}</p>`;
   return h;
 }
