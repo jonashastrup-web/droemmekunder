@@ -57,6 +57,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--purple)}
 .lynrow input{flex:1}
 .lynlist{margin:12px 0 0;padding-left:22px;font-weight:600}
 .bigscore{background:var(--purple);color:#fff;border-radius:12px;padding:14px 16px;font-size:22px;font-weight:800;margin:6px 0 14px}
+.done{background:var(--purple);color:#fff;border-radius:14px;padding:18px;margin-top:26px;font-size:17px;line-height:1.45}
+.done ol{margin:10px 0 14px;padding-left:22px}
+.done .btn{width:100%}
 .counter{font-size:12px;opacity:.6;text-align:right;margin-top:4px}
 </style>
 </head>
@@ -194,7 +197,8 @@ function render(){
       <button type="button" class="btn ghost" id="dl">Download</button>
     </div>
     <div class="ok" id="ok"></div>
-    <div id="sumtxt">${summaryHTML()}</div></div>`;
+    <div id="sumtxt">${summaryHTML()}</div>
+    <div class="done"><b>NÅR I ER FÆRDIGE – GØR SÅDAN HER:</b><ol><li><b>Tryk på knappen "Aflever via Teams" herunder.</b></li><li><b>Teams åbner en chat med Jonas. Står jeres svar ikke allerede i chatten, så sæt det ind.</b></li><li><b>Tryk Send i Teams.</b></li></ol><b>Først når beskeden er sendt, tæller jeres point.</b><br><br><button type="button" class="btn primary" id="mail2">Aflever via Teams</button></div></div>`;
   }
   app.innerHTML=h;window.scrollTo(0,0);bind();
 }
@@ -243,6 +247,7 @@ function bind(){
   const m=document.getElementById("mail");
   if(m){
     m.onclick=()=>{const t=summaryText();const msg=t.length>1800?`Drømmekunder – ${nm(S.a)} & ${nm(S.b)}. Svaret er kopieret, sæt det ind her.`:t;const url=`https://teams.microsoft.com/l/chat/0/0?users=${MAIL}&message=${encodeURIComponent(msg)}`;flash("Svaret er kopieret, og Teams åbner nu. Sæt svaret ind i chatten til Jonas, hvis det ikke allerede står der, og tryk Send.");(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).catch(()=>{}).finally(()=>setTimeout(()=>{location.href=url},700))};
+    const m2=document.getElementById("mail2");if(m2)m2.onclick=()=>m.onclick();
     document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(summaryText());flash("Kopieret. Sæt det ind i en Teams-chat til Jonas.")}catch(e){flash("Kunne ikke kopiere automatisk. Brug Download i stedet.")}};
     document.getElementById("dl").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([summaryText()],{type:"text/plain;charset=utf-8"}));a.download=`Droemmekunder_${nm(S.a)}_${nm(S.b)}.txt`;a.click();flash("Filen er downloadet. Send den til Jonas.")};
   }
