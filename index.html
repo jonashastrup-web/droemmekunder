@@ -52,6 +52,11 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--purple)}
 .opt{margin:26px 0 0;padding-top:14px;border-top:1.5px dashed var(--grey-dark);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.6}
 .prize{background:var(--yellow);border-radius:12px;padding:14px 16px;margin-top:16px}
 .prize ul{margin:6px 0 6px;padding-left:20px}
+.score{align-self:center;font-weight:800;font-size:15px;color:var(--red-dark)}
+.lynrow{display:flex;gap:8px;margin-top:12px}
+.lynrow input{flex:1}
+.lynlist{margin:12px 0 0;padding-left:22px;font-weight:600}
+.bigscore{background:var(--purple);color:#fff;border-radius:12px;padding:14px 16px;font-size:22px;font-weight:800;margin:6px 0 14px}
 .counter{font-size:12px;opacity:.6;text-align:right;margin-top:4px}
 </style>
 </head>
@@ -64,6 +69,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--purple)}
 <main id="app"></main>
 <div class="nav"><div class="in">
   <button class="btn ghost" id="back">Tilbage</button>
+  <span class="score" id="score"></span>
   <button class="btn primary" id="next">Næste</button>
 </div></div>
 
@@ -85,7 +91,7 @@ const INTERVIEW=[
 ];
 
 const steps=[
- {id:"intro"},{id:"pair"},{id:"int",who:"A"},{id:"int",who:"B"},{id:"look"},{id:"contacts"},{id:"msg"},{id:"sum"}
+ {id:"intro"},{id:"pair"},{id:"int",who:"A"},{id:"int",who:"B"},{id:"lyn"},{id:"look"},{id:"contacts"},{id:"msg"},{id:"sum"}
 ];
 
 function chips(path,opts,val){return `<div class="chips">${opts.map(o=>`<button type="button" data-path="${path}" data-val="${esc(o)}" class="${val===o?"on":""}">${esc(o)}</button>`).join("")}</div>`}
@@ -97,7 +103,7 @@ function field(path,q,val){
 function get(path){return path.split(".").reduce((o,k)=>o==null?undefined:o[k],S)}
 function set(path,v){const ks=path.split(".");let o=S;ks.slice(0,-1).forEach(k=>{if(o[k]==null)o[k]={};o=o[k]});o[ks.at(-1)]=v;save()}
 
-let timerInt=null,timerLeft=480;
+let timerInt=null,timerLeft=480,lynInt=null;
 function timerHTML(){return `<div class="timer" id="timer"><b id="tt">8:00</b><span style="flex:1">Ca. 8 minutter pr. interview</span><button class="btn small ghost" id="tbtn" type="button">Start</button></div>`}
 function bindTimer(){
   clearInterval(timerInt);timerInt=null;timerLeft=480;
@@ -108,6 +114,7 @@ function bindTimer(){
 }
 
 function render(){
+  if(lynInt){clearInterval(lynInt);lynInt=null;S.F.lynDone=1;save()}
   const st=steps[S.step],app=document.getElementById("app");
   document.getElementById("bar").style.width=(S.step/(steps.length-1)*100)+"%";
   document.getElementById("back").style.visibility=S.step===0?"hidden":"visible";
@@ -116,18 +123,19 @@ function render(){
   let h="";
   if(st.id==="intro"){
     h=`<div class="card"><h2>Hvem elsker vi at arbejde med?</h2>
-    <p class="lead">I skal finde ud af, hvilke kunder vi godt kan lide at arbejde med, og hvordan vi får flere af dem.</p>
+    <p class="lead">I skal finde ud af, hvilke kunder vi godt kan lide at arbejde med, og hvordan vi får flere af dem. I har ca. 40 minutter.</p>
     <p><b>Hvorfor gør vi det?</b><br>De bedste kunder er dem, der gør arbejdet sjovt, og som vi samtidig er rigtig gode til at skabe noget for. Når vi ved, hvem de er, kan vi bruge vores tid på at finde flere af dem. I kender kunderne bedst fra hverdagen, og derfor er det jeres svar, der tæller.</p>
     <p><b>Sådan gør I</b></p>
     <ol>
       <li>Skriv jeres navne. Brug én telefon pr. par.</li>
       <li>Interview hinanden på skift i ca. 8 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
+      <li>Spil lynrunden: 60 sekunder til at skrive virksomheder, I drømmer om at arbejde med.</li>
       <li>Find sammen tre kontaktpersoner, der ligner dem, I elsker at arbejde med.</li>
       <li>Tænk evt. på, om I har nogen i jeres netværk, som kunne være drømmekunden.</li>
       <li>Find sammen på en event- eller rejseidé, som en af dem ville elske. Tænk stort, det er bare en idé.</li>
-      <li>Aflever jeres idé.</li>
+      <li>Tryk "Aflever jeres idé", og send den mail, der åbner.</li>
     </ol>
-    <div class="prize"><b>De bedste svar giver point til fredagens quiz, som man gerne vil vinde!</b><ul><li>Det sjoveste bud</li><li>Det bedste bud</li><li>Det mest gennemførte bud</li></ul>I skal ikke præsentere noget, medmindre man virkelig gerne vil fredag eftermiddag.</div>
+    <div class="prize"><b>Saml point til fredagens Jeopardy!</b><br>Alt, I udfylder, giver point, som I tager med til Jeopardy fredag. Jeres point står nederst på skærmen.<ul><li>100 point pr. svar</li><li>100 point pr. virksomhed i lynrunden</li><li>Op til 900 point for jeres idé</li></ul>Bonuspoint til det sjoveste, det bedste og det mest gennemførte bud. Kun rigtige svar tæller. I skal ikke præsentere noget, medmindre man virkelig gerne vil fredag eftermiddag.</div>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
   }
   else if(st.id==="pair"){
@@ -141,12 +149,20 @@ function render(){
   else if(st.id==="int"){
     const me=st.who==="A"?S.a:S.b,you=st.who==="A"?S.b:S.a;
     h=`<div class="card">${lab}<h2>Interview: <span class="who">${esc(me||"Person")}</span></h2>
-    <p class="lead">${esc(you||"Den anden")} spørger og skriver. ${esc(me||"")} svarer.</p>${timerHTML()}
+    <p class="lead">${esc(you||"Den anden")} holder telefonen, spørger og skriver. ${esc(me||"")} svarer. Hvert svar giver 100 point.</p>${timerHTML()}
     ${INTERVIEW.map((q,i)=>(q.opt&&!INTERVIEW[i-1].opt?'<div class="opt">Valgfrit, hvis I har tid</div>':'')+field(st.who+"."+q.k,q,S[st.who][q.k])).join("")}</div>`;
+  }
+  else if(st.id==="lyn"){
+    const L=S.F.lyn||[];
+    h=`<div class="card">${lab}<h2>Lynrunde: 60 sekunder</h2>
+    <p class="lead">Skriv så mange virksomheder som muligt, som I drømmer om at arbejde med. Tryk Tilføj efter hvert navn. Hver virksomhed giver 100 point. Tiden starter, når I trykker Start, og I får kun ét forsøg.</p>
+    <div class="timer" id="lt"><b id="ltt">${S.F.lynDone?"0:00":"1:00"}</b><span style="flex:1">${S.F.lynDone?"Tiden er gået":"Klar?"}</span>${S.F.lynDone?"":`<button class="btn small primary" id="lstart" type="button">Start</button>`}</div>
+    <div class="lynrow"><input type="text" id="lin" placeholder="Virksomhed" disabled autocomplete="off"><button class="btn small ghost" id="ladd" type="button" disabled>Tilføj</button></div>
+    <ol class="lynlist">${L.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`;
   }
   else if(st.id==="look"){
     h=`<div class="card">${lab}<h2>Tre lignende kontaktpersoner</h2>
-    <p class="lead">Tænk på kontaktpersonerne hos jeres to kunder. Hvem ligner dem i rolle og type, men arbejder ikke med os i dag? Navn er valgfrit.</p>
+    <p class="lead">Tænk på kontaktpersonerne hos jeres to kunder. Hvem ligner dem, men arbejder ikke med os i dag? Skriv en rigtig virksomhed og den rolle, vi skal tale med. Navn er valgfrit. 100 point for hver, og 100 ekstra, hvis I skriver hvorfor.</p>
     ${[1,2,3].map(i=>`<label>Kontaktperson ${i}</label><input type="text" data-path="F.look${i}" value="${esc(S.F["look"+i])}" placeholder="Rolle og virksomhed, fx HR-chef hos X">
       <input type="text" data-path="F.why${i}" value="${esc(S.F["why"+i])}" placeholder="Hvorfor dem? (kort)" style="margin-top:6px">`).join("")}
     </div>`;
@@ -161,7 +177,7 @@ function render(){
   }
   else if(st.id==="msg"){
     h=`<div class="card">${lab}<h2>Idé til en drømmekunde</h2>
-    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud. De bedste svar giver point til fredagens quiz: det sjoveste, det bedste og det mest gennemførte bud.</p>
+    <p class="lead">Vælg én af jeres tre kontaktpersoner, og skitsér et event eller en rejse, I ville elske at lave for vedkommendes virksomhed. Tænk stort. Det er en idé, ikke et tilbud. Idéen giver op til 900 point, og der er bonuspoint til det sjoveste, det bedste og det mest gennemførte bud.</p>
     <label>Til hvem?</label><input type="text" data-path="F.iFor" value="${esc(S.F.iFor)}">
     <label>Titel på idéen</label><input type="text" data-path="F.iTitle" value="${esc(S.F.iTitle)}" placeholder="Fx kick-off på en øde ø">
     <label>Hvad skal de opleve?</label><textarea data-path="F.iWhat">${esc(S.F.iWhat)}</textarea>
@@ -170,7 +186,8 @@ function render(){
   }
   else if(st.id==="sum"){
     h=`<div class="card summary"><h2>Klar til at aflevere</h2>
-    <p class="lead">Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Alle afleveringer kan give point til fredagens quiz. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
+    <div class="bigscore">★ ${score()} point til Jeopardy</div>
+    <p class="lead">Tryk "Aflever jeres idé". Det åbner en mail til Jonas med jeres svar og point. Husk at trykke Send i mailen, ellers tæller jeres point ikke. Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
     <div class="chips" style="margin-bottom:6px">
       <button type="button" class="btn primary" id="mail">Aflever jeres idé</button>
       <button type="button" class="btn ghost" id="copy">Kopiér svar</button>
@@ -183,9 +200,17 @@ function render(){
 }
 
 function nm(x){return x&&x!=="__other"?x:"?"}
+function pts(){let p=0;const f=v=>v&&String(v).trim().length>1;
+  ["A","B"].forEach(w=>INTERVIEW.forEach(q=>{if(f(S[w][q.k]))p+=100}));
+  p+=(S.F.lyn||[]).length*100;
+  [1,2,3].forEach(i=>{if(f(S.F["look"+i]))p+=100;if(f(S.F["why"+i]))p+=100});
+  if(f(S.F.iFor))p+=100;if(f(S.F.iTitle))p+=200;if(f(S.F.iWhat))p+=300;if(f(S.F.iWhy))p+=300;
+  return p}
+function score(){const e=document.getElementById("score");const p=pts();if(e)e.textContent=p?`★ ${p.toLocaleString("da-DK")} point`:"";return p.toLocaleString("da-DK")}
 function summaryText(){
-  const L=[];L.push(`DRØMMEKUNDER – ${nm(S.a)} & ${nm(S.b)}`,"");
+  const L=[];L.push(`DRØMMEKUNDER – ${nm(S.a)} & ${nm(S.b)}`,`Point til Jeopardy: ${pts()}`,"");
   [["A",S.a],["B",S.b]].forEach(([w,n])=>{L.push(`== ${nm(n)} ==`);INTERVIEW.forEach(q=>L.push(`${q.t}\n${S[w][q.k]||"-"}`,""))});
+  L.push("== Lynrunde ==",(S.F.lyn||[]).join(", ")||"-","");
   L.push("== Tre lignende kontaktpersoner ==");[1,2,3].forEach(i=>L.push(`${i}. ${S.F["look"+i]||"-"}${S.F["why"+i]?" – "+S.F["why"+i]:""}`));L.push("");
   L.push("== Nogen i netværket ==",`${nm(S.a)}: ${S.F.kA||"-"}`,`${nm(S.b)}: ${S.F.kB||"-"}`,`Virksomhed: ${S.F.kFirma||"-"}`,"");
   L.push("== Idé til en drømmekunde ==",`Til: ${S.F.iFor||"-"}`,`Titel: ${S.F.iTitle||"-"}`,`Oplevelsen: ${S.F.iWhat||"-"}`,`Hvorfor: ${S.F.iWhy||"-"}`);
@@ -193,6 +218,7 @@ function summaryText(){
 }
 function summaryHTML(){
   let h="";[["A",S.a],["B",S.b]].forEach(([w,n])=>{h+=`<h3>${esc(nm(n))}</h3>`;INTERVIEW.forEach(q=>h+=`<div class="q">${esc(q.t)}</div><p>${esc(S[w][q.k]||"-")}</p>`)});
+  h+=`<h3>Lynrunde</h3><p>${esc((S.F.lyn||[]).join(", ")||"-")}</p>`;
   h+=`<h3>Lignende kontaktpersoner</h3>`+[1,2,3].map(i=>`<p>${i}. ${esc(S.F["look"+i]||"-")}${S.F["why"+i]?" – "+esc(S.F["why"+i]):""}</p>`).join("");
   h+=`<h3>Nogen i netværket</h3><p>${esc(nm(S.a))}: ${esc(S.F.kA||"-")}</p><p>${esc(nm(S.b))}: ${esc(S.F.kB||"-")}</p><p>Virksomhed: ${esc(S.F.kFirma||"-")}</p>`;
   h+=`<h3>Idé til en drømmekunde</h3><p>Til: ${esc(S.F.iFor||"-")}</p><p>${esc(S.F.iTitle||"-")}</p><p>${esc(S.F.iWhat||"-")}</p><p>Hvorfor: ${esc(S.F.iWhy||"-")}</p>`;
@@ -202,13 +228,18 @@ function flash(t){const o=document.getElementById("ok");o.textContent=t;o.style.
 
 function bind(){
   document.querySelectorAll("[data-path]").forEach(el=>{
-    if(el.tagName==="BUTTON")el.onclick=()=>{set(el.dataset.path,el.dataset.val);el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el))};
-    else el.oninput=()=>{set(el.dataset.path,el.value);cnt()};
+    if(el.tagName==="BUTTON")el.onclick=()=>{set(el.dataset.path,el.dataset.val);el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el));score()};
+    else el.oninput=()=>{set(el.dataset.path,el.value);cnt();score()};
   });
   document.querySelectorAll("select[data-name]").forEach(el=>el.onchange=()=>{const k=el.dataset.name;S[k]=el.value;save();const o=document.querySelector(`[data-other=${k}]`);o.classList.toggle("hidden",el.value!=="__other");if(el.value==="__other")o.focus()});
   document.querySelectorAll("[data-other]").forEach(el=>el.oninput=()=>{S[el.dataset.other]=el.value||"__other";save()});
   const add=document.getElementById("addc");if(add)add.onclick=()=>{S.F.contacts.push({});save();render()};
-  bindTimer();cnt();
+  bindTimer();cnt();score();
+  const ls=document.getElementById("lstart");
+  if(ls)ls.onclick=()=>{ls.remove();const inp=document.getElementById("lin"),ad=document.getElementById("ladd"),sp=document.querySelector("#lt span");inp.disabled=false;ad.disabled=false;inp.focus();sp.textContent="Kør!";let left=60;
+    const add=()=>{const v=inp.value.trim();if(!v||!lynInt)return;(S.F.lyn=S.F.lyn||[]).push(v);save();const li=document.createElement("li");li.textContent=v;document.querySelector(".lynlist").appendChild(li);inp.value="";inp.focus();score()};
+    ad.onclick=add;inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();add()}};
+    lynInt=setInterval(()=>{left--;document.getElementById("ltt").textContent=`0:${String(left).padStart(2,"0")}`;if(left<=0){clearInterval(lynInt);lynInt=null;S.F.lynDone=1;save();inp.disabled=true;ad.disabled=true;sp.textContent="Tiden er gået"}},1000)};
   const m=document.getElementById("mail");
   if(m){
     m.onclick=()=>{let body=summaryText();if(body.length>1800){navigator.clipboard?.writeText(body).catch(()=>{});body=body.slice(0,1700)+"\n\n[Teksten var for lang til mailen. Hele svaret er kopieret, så sæt det ind her i mailen.]"}
