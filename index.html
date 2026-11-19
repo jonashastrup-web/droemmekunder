@@ -133,7 +133,7 @@ function render(){
       <li>Find tre personer i andre virksomheder, der minder om jeres yndlingskontakt. Fx: Er jeres kontakt HR-chef i en større it-virksomhed, kunne det være HR-chefen i en anden it-virksomhed, vi ikke arbejder med endnu.</li>
       <li>Tænk evt. på, om I har nogen i jeres netværk, som kunne være drømmekunden.</li>
       <li>Find sammen på en event- eller rejseidé, som en af dem ville elske. Tænk stort, det er bare en idé.</li>
-      <li>Tryk "Aflever jeres idé", og send den mail, der åbner.</li>
+      <li>Tryk "Aflever via Teams", og send svaret til Jonas i chatten, der åbner.</li>
     </ol>
     <div class="prize"><b>Saml point til fredagens Jeopardy!</b><br>Alt, I udfylder, giver point, som I tager med til Jeopardy fredag. Jeres point står nederst på skærmen.<ul><li>100 point pr. svar</li><li>100 point pr. virksomhed i lynrunden</li><li>Op til 900 point for jeres idé</li></ul>Bonuspoint til det sjoveste, det bedste og det mest gennemførte bud. Kun rigtige svar tæller. I skal ikke præsentere noget, medmindre man virkelig gerne vil fredag eftermiddag.</div>
     <p class="warn">Svarene gemmes undervejs i denne browser, så I ikke mister noget, hvis nettet i toget falder ud.</p></div>`;
@@ -187,9 +187,9 @@ function render(){
   else if(st.id==="sum"){
     h=`<div class="card summary"><h2>Klar til at aflevere</h2>
     <div class="bigscore">★ ${score()} point til Jeopardy</div>
-    <p class="lead">Tryk "Aflever jeres idé". Det åbner en mail til Jonas med jeres svar og point. Husk at trykke Send i mailen, ellers tæller jeres point ikke. Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Virker knappen ikke, så brug "Kopiér" eller "Download".</p>
+    <p class="lead">Tryk "Aflever via Teams". Jeres svar bliver kopieret, og Teams åbner en chat med Jonas. Står svaret ikke allerede i chatten, så sæt det ind (hold fingeren nede og vælg Indsæt), og tryk Send. Ellers tæller jeres point ikke. Vi samler svarene til en fælles profil af drømmekunden og deler den med alle. Virker knappen ikke, så tryk "Kopiér svar", og sæt det ind i en Teams-besked til Jonas.</p>
     <div class="chips" style="margin-bottom:6px">
-      <button type="button" class="btn primary" id="mail">Aflever jeres idé</button>
+      <button type="button" class="btn primary" id="mail">Aflever via Teams</button>
       <button type="button" class="btn ghost" id="copy">Kopiér svar</button>
       <button type="button" class="btn ghost" id="dl">Download</button>
     </div>
@@ -242,9 +242,8 @@ function bind(){
     lynInt=setInterval(()=>{left--;document.getElementById("ltt").textContent=`0:${String(left).padStart(2,"0")}`;if(left<=0){clearInterval(lynInt);lynInt=null;S.F.lynDone=1;save();inp.disabled=true;ad.disabled=true;sp.textContent="Tiden er gået"}},1000)};
   const m=document.getElementById("mail");
   if(m){
-    m.onclick=()=>{let body=summaryText();if(body.length>1800){navigator.clipboard?.writeText(body).catch(()=>{});body=body.slice(0,1700)+"\n\n[Teksten var for lang til mailen. Hele svaret er kopieret, så sæt det ind her i mailen.]"}
-      location.href=`mailto:${MAIL}?subject=${encodeURIComponent("Drømmekunder – "+nm(S.a)+" & "+nm(S.b))}&body=${encodeURIComponent(body)}`;flash("Mailen åbnes i jeres mailprogram. Husk at trykke send.")};
-    document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(summaryText());flash("Kopieret. Sæt det ind i en mail til Jonas.")}catch(e){flash("Kunne ikke kopiere automatisk. Brug Download i stedet.")}};
+    m.onclick=()=>{const t=summaryText();const msg=t.length>1800?`Drømmekunder – ${nm(S.a)} & ${nm(S.b)}. Svaret er kopieret, sæt det ind her.`:t;const url=`https://teams.microsoft.com/l/chat/0/0?users=${MAIL}&message=${encodeURIComponent(msg)}`;flash("Svaret er kopieret, og Teams åbner nu. Sæt svaret ind i chatten til Jonas, hvis det ikke allerede står der, og tryk Send.");(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).catch(()=>{}).finally(()=>setTimeout(()=>{location.href=url},700))};
+    document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(summaryText());flash("Kopieret. Sæt det ind i en Teams-chat til Jonas.")}catch(e){flash("Kunne ikke kopiere automatisk. Brug Download i stedet.")}};
     document.getElementById("dl").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([summaryText()],{type:"text/plain;charset=utf-8"}));a.download=`Droemmekunder_${nm(S.a)}_${nm(S.b)}.txt`;a.click();flash("Filen er downloadet. Send den til Jonas.")};
   }
 }
@@ -253,7 +252,7 @@ function cnt(){const c=document.getElementById("cnt");if(c)c.textContent=`${(S.F
 document.getElementById("next").onclick=()=>{
   const st=steps[S.step];
   if(st.id==="pair"&&(!S.a.trim()||!S.b.trim())){alert("Skriv begge navne først.");return}
-  if(st.id==="sum"){flash("Tak for jeres svar! Har I trykket Send i mailen, er I færdige. God tur til Stockholm.");document.getElementById("ok").scrollIntoView({behavior:"smooth"});return}
+  if(st.id==="sum"){flash("Tak for jeres svar! Har I sendt svaret til Jonas på Teams, er I færdige. God tur til Stockholm.");document.getElementById("ok").scrollIntoView({behavior:"smooth"});return}
   S.step=Math.min(steps.length-1,S.step+1);save();render()};
 document.getElementById("back").onclick=()=>{S.step=Math.max(0,S.step-1);save();render()};
 render();
