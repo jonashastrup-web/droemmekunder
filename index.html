@@ -130,7 +130,7 @@ function render(){
       <li>Skriv jeres navne. Brug én telefon pr. par.</li>
       <li>Interview hinanden på skift i ca. 8 minutter hver. Den ene spørger og skriver, den anden svarer.</li>
       <li>Spil lynrunden: 60 sekunder til at skrive virksomheder, I drømmer om at arbejde med.</li>
-      <li>Find sammen tre kontaktpersoner, der ligner dem, I elsker at arbejde med.</li>
+      <li>Find tre personer i andre virksomheder, der minder om jeres yndlingskontakt. Fx: Er jeres kontakt HR-chef i en større it-virksomhed, kunne det være HR-chefen i en anden it-virksomhed, vi ikke arbejder med endnu.</li>
       <li>Tænk evt. på, om I har nogen i jeres netværk, som kunne være drømmekunden.</li>
       <li>Find sammen på en event- eller rejseidé, som en af dem ville elske. Tænk stort, det er bare en idé.</li>
       <li>Tryk "Aflever jeres idé", og send den mail, der åbner.</li>
@@ -162,7 +162,7 @@ function render(){
   }
   else if(st.id==="look"){
     h=`<div class="card">${lab}<h2>Tre lignende kontaktpersoner</h2>
-    <p class="lead">Tænk på kontaktpersonerne hos jeres to kunder. Hvem ligner dem, men arbejder ikke med os i dag? Skriv en rigtig virksomhed og den rolle, vi skal tale med. Navn er valgfrit. 100 point for hver, og 100 ekstra, hvis I skriver hvorfor.</p>
+    <p class="lead">Tænk på jeres yndlingskontakt hos de to kunder. Hvem har en lignende rolle i en virksomhed, vi ikke arbejder med i dag? Fx: Er jeres kontakt HR-chef i en større it-virksomhed, kunne det være HR-chefen i en anden it-virksomhed. Navn er valgfrit. 100 point for hver, og 100 ekstra, hvis I skriver hvorfor.</p>
     ${[1,2,3].map(i=>`<label>Kontaktperson ${i}</label><input type="text" data-path="F.look${i}" value="${esc(S.F["look"+i])}" placeholder="Rolle og virksomhed, fx HR-chef hos X">
       <input type="text" data-path="F.why${i}" value="${esc(S.F["why"+i])}" placeholder="Hvorfor dem? (kort)" style="margin-top:6px">`).join("")}
     </div>`;
